@@ -1,25 +1,37 @@
 import { Suspense } from 'react';
+import WordClient from './WordClient'; // 👇 we’ll define this in same file below
 
-function Loading() {
+export default function Page() {
   return (
-    <div className="text-white p-10 text-xl">
-      Loading...
-    </div>
+    <Suspense fallback={<div className="text-white p-10 text-xl">Loading...</div>}>
+      <WordClient />
+    </Suspense>
   );
 }
 
-function WordPageClient() {
-  "use client";
-  import { useEffect, useState } from 'react';
-  import { useSearchParams } from 'next/navigation';
-  import Navbar from '@/components/Navbar';
+// 👇 This stays in the same file — not in another file
+// Client Component below this line
 
+'use client';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Navbar from '@/components/Navbar';
+
+function WordClient() {
   const searchParams = useSearchParams();
   const word = searchParams.get("word");
 
   const [definition, setDefinition] = useState(null);
   const [error, setError] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
+
+  useEffect(() => {
+    if (word) {
+      document.title = `Definition of ${word} | AED Dictionary`;
+    } else {
+      document.title = 'AED Dictionary';
+    }
+  }, [word]);
 
   useEffect(() => {
     if (!word) return;
@@ -43,14 +55,6 @@ function WordPageClient() {
     };
 
     fetchDefinition();
-  }, [word]);
-
-  useEffect(() => {
-    if (word) {
-      document.title = `Definition of ${word} | AED Dictionary`;
-    } else {
-      document.title = 'AED Dictionary';
-    }
   }, [word]);
 
   if (!word) {
@@ -120,11 +124,4 @@ function WordPageClient() {
   );
 }
 
-// Main page component
-export default function Page() {
-  return (
-    <Suspense fallback={<Loading />}>
-      <WordPageClient />
-    </Suspense>
-  );
-}
+export { WordClient as default };
